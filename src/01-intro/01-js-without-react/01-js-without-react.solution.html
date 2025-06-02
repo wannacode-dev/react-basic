@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>JS без React</title>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script>
+        const h1 = document.createElement('h1');
+
+        h1.textContent = 'Привет из JS!';
+
+        const root = document.getElementById('root');
+
+        root.appendChild(h1);
+    </script>
+</body>
+</html>

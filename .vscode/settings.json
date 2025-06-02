@@ -1,0 +1,8 @@
+{
+  "editor.tabSize": 4,
+  "files.encoding": "utf8",
+  "files.eol": "\n",
+  "html.format.wrapLineLength": 100,
+  "editor.renderWhitespace": "all",
+  "editor.highlightNonAsciiCharacters": false
+}

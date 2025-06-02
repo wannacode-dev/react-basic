@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Введение в React</title>
+
+    <script src="../../../public/react.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script>
+        const h1 = React.createElement('h1', null, 'Привет из React!');
+
+        const root = document.getElementById('root');
+
+        ReactDOM.render(h1, root);
+    </script>
+</body>
+</html>

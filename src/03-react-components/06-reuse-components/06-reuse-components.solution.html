@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>React элементы</title>
+
+    <script src="../../../public/react.js"></script>
+
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .title {
+            color: red;
+        }
+
+        .text {
+            color: blue;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const h1Text = "Привет из React компонента!";
+        const pText = "Это текст из компонента P";
+
+        const myFirstComponentText = "Это мой первый компонент!";
+        const mySecondComponentText = "Я создал переменную сам!";
+
+        const mySecondComponentText2 = "Это мой второй компонент!";
+        const mySecondComponentText3 = "Я создал компонент сам!";
+
+        function H1({text}) {
+            return <h1 className="title">{text}</h1>;
+        }
+
+        function P({text}) {
+            return <p className="text">{text}</p>;
+        }
+
+        function Container({children}) {
+            return <div className="container">{children}</div>;
+        }
+
+        const elements = <Container>
+            <H1 text={h1Text} />
+            <P text={pText} />
+
+            <H1 text={myFirstComponentText} />
+            <P text={mySecondComponentText} />
+
+            <H1 text={mySecondComponentText} />
+            <P text={mySecondComponentText} />
+        </Container>;
+
+        const root = document.getElementById('root');
+
+        ReactDOM.render(elements, root);
+    </script>
+</body>
+</html>
