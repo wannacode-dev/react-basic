@@ -33,7 +33,7 @@ function scanDirectory(dir) {
         if (stat.isDirectory()) {
             // Проверяем, есть ли в директории файлы с .problem.
             const files = fs.readdirSync(fullPath);
-            const problemFile = files.find(f => f.includes('.problem.'));
+            const problemFile = files.find(f => f.includes('.problem.') && (f.endsWith('.html') || f.endsWith('.js') || f.endsWith('.jsx')));
             
             if (problemFile) {
                 // Нашли задание
@@ -133,50 +133,139 @@ app.get('/task', (req, res) => {
         }
 
         const content = fs.readFileSync(filePath, 'utf-8');
+        const fileExtension = path.extname(taskPath).toLowerCase();
 
-        // Определяем тип файла
-        const isReactTask = content.includes('React.') || content.includes('ReactDOM.') || content.includes('JSX');
+        // Определяем тип файла и нужен ли React
+        const isJsFile = fileExtension === '.js' || fileExtension === '.jsx';
+        const isHtmlFile = fileExtension === '.html';
+        const isReactTask = content.includes('React.') || 
+                           content.includes('ReactDOM.') || 
+                           content.includes('JSX') ||
+                           content.includes('<') && content.includes('>') ||
+                           isJsFile; // Все JS файлы считаем React заданиями
+
+        if (isHtmlFile) {
+            // Для HTML файлов используем существующую логику
+            let template = isReactTask ? reactTemplate : taskTemplate;
+            
+            // Извлекаем стили если они есть
+            const styleMatch = content.match(/<style>([\s\S]*?)<\/style>/);
+            const styles = styleMatch ? styleMatch[1] : '';
+
+            // Извлекаем скрипт
+            const scriptMatch = content.match(/<script[\s\S]*?>([\s\S]*?)<\/script>/);
+            const script = scriptMatch ? scriptMatch[1] : content;
+
+            // Создаем HTML с информацией о файле
+            const fileInfo = `
+                <div class="current-file" style="
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    background: #f5f5f5;
+                    padding: 8px 16px;
+                    font-family: monospace;
+                    font-size: 14px;
+                    color: #666;
+                    border-bottom: 1px solid #ddd;
+                    z-index: 1000;
+                ">
+                    Файл: ${taskPath}
+                </div>
+                <div id="root" style="margin-top: 40px;"></div>
+            `;
+
+            // Заменяем плейсхолдеры в шаблоне
+            let result = template
+                .replace('<div id="root"></div>', fileInfo)
+                .replace('TASK_STYLES_PLACEHOLDER', `<style>${styles}</style>`)
+                .replace('TASK_SCRIPT_PLACEHOLDER', script)
+                .replace('TASK_CODE_PLACEHOLDER', script);
+
+            res.setHeader('Content-Type', 'text/html');
+            res.send(result);
+        } else if (isJsFile) {
+            // Для JS/JSX файлов создаем специальную HTML страницу
+            const jsTemplate = `
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React Задание</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Hot reload -->
+    <script>
+        try {
+            const ws = new WebSocket('ws://' + window.location.host);
+            ws.onmessage = function(event) {
+                if (event.data === 'reload') {
+                    window.location.reload();
+                }
+            };
+        } catch (e) {
+            console.log('WebSocket not available - hot reload disabled');
+        }
+    </script>
+    
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .title {
+            color: red;
+        }
+
+        .text {
+            color: blue;
+        }
         
-        // Выбираем подходящий шаблон
-        let template = isReactTask ? reactTemplate : taskTemplate;
+        .current-file {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #f5f5f5;
+            padding: 8px 16px;
+            font-family: monospace;
+            font-size: 14px;
+            color: #666;
+            border-bottom: 1px solid #ddd;
+            z-index: 1000;
+        }
         
-        // Извлекаем стили если они есть
-        const styleMatch = content.match(/<style>([\s\S]*?)<\/style>/);
-        const styles = styleMatch ? styleMatch[1] : '';
+        #root {
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="current-file">Файл: ${taskPath}</div>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        ${content}
+    </script>
+</body>
+</html>`;
 
-        // Извлекаем скрипт
-        const scriptMatch = content.match(/<script[\s\S]*?>([\s\S]*?)<\/script>/);
-        const script = scriptMatch ? scriptMatch[1] : content;
-
-        // Создаем HTML с информацией о файле
-        const fileInfo = `
-            <div class="current-file" style="
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                background: #f5f5f5;
-                padding: 8px 16px;
-                font-family: monospace;
-                font-size: 14px;
-                color: #666;
-                border-bottom: 1px solid #ddd;
-                z-index: 1000;
-            ">
-                Файл: ${taskPath}
-            </div>
-            <div id="root" style="margin-top: 40px;"></div>
-        `;
-
-        // Заменяем плейсхолдеры в шаблоне
-        let result = template
-            .replace('<div id="root"></div>', fileInfo)
-            .replace('TASK_STYLES_PLACEHOLDER', `<style>${styles}</style>`)
-            .replace('TASK_SCRIPT_PLACEHOLDER', script)
-            .replace('TASK_CODE_PLACEHOLDER', script);
-
-        res.setHeader('Content-Type', 'text/html');
-        res.send(result);
+            res.setHeader('Content-Type', 'text/html');
+            res.send(jsTemplate);
+        } else {
+            // Для других типов файлов
+            res.setHeader('Content-Type', 'text/plain');
+            res.send(content);
+        }
     } catch (error) {
         console.error('Ошибка загрузки задания:', error);
         res.status(500).send('Ошибка при загрузке задания');
@@ -199,9 +288,98 @@ app.get('/solution', (req, res) => {
             return res.status(404).send('Решение не найдено');
         }
 
-        // Отправляем файл с правильными заголовками
-        res.setHeader('Content-Type', 'text/html');
-        res.sendFile(filePath);
+        const content = fs.readFileSync(filePath, 'utf-8');
+        const fileExtension = path.extname(solutionPath).toLowerCase();
+
+        // Определяем тип файла
+        const isJsFile = fileExtension === '.js' || fileExtension === '.jsx';
+        const isHtmlFile = fileExtension === '.html';
+
+        if (isHtmlFile) {
+            // Для HTML файлов отправляем как есть
+            res.setHeader('Content-Type', 'text/html');
+            res.sendFile(filePath);
+        } else if (isJsFile) {
+            // Для JS/JSX файлов создаем HTML страницу (аналогично заданиям)
+            const jsTemplate = `
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React Решение</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Hot reload -->
+    <script>
+        try {
+            const ws = new WebSocket('ws://' + window.location.host);
+            ws.onmessage = function(event) {
+                if (event.data === 'reload') {
+                    window.location.reload();
+                }
+            };
+        } catch (e) {
+            console.log('WebSocket not available - hot reload disabled');
+        }
+    </script>
+    
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .title {
+            color: red;
+        }
+
+        .text {
+            color: blue;
+        }
+        
+        .current-file {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #f5f5f5;
+            padding: 8px 16px;
+            font-family: monospace;
+            font-size: 14px;
+            color: #666;
+            border-bottom: 1px solid #ddd;
+            z-index: 1000;
+        }
+        
+        #root {
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="current-file">Файл: ${solutionPath}</div>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        ${content}
+    </script>
+</body>
+</html>`;
+
+            res.setHeader('Content-Type', 'text/html');
+            res.send(jsTemplate);
+        } else {
+            // Для других типов файлов
+            res.setHeader('Content-Type', 'text/plain');
+            res.send(content);
+        }
     } catch (error) {
         console.error('Ошибка загрузки решения:', error);
         res.status(500).send('Ошибка при загрузке решения');
