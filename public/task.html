@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задание React</title>
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        .task-header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .task-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .task-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #2196F3;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            background: #1976D2;
+        }
+
+        .button.active {
+            background: #1976D2;
+        }
+
+        .button.secondary {
+            background: #9e9e9e;
+        }
+
+        .button.secondary:hover {
+            background: #757575;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #2196F3;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        #taskFrame, #solutionFrame {
+            width: 100%;
+            min-height: 500px;
+            border: none;
+            border-radius: 10px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← Вернуться к списку заданий</a>
+        
+        <div class="task-header">
+            <h1 class="task-title" id="taskTitle">Загрузка задания...</h1>
+            <div class="task-description" id="taskDescription"></div>
+            
+            <div class="button-group">
+                <button class="button active" id="showTaskBtn" onclick="showTask()">
+                    Задание
+                </button>
+                <button class="button secondary" id="showSolutionBtn" onclick="showSolution()">
+                    Решение
+                </button>
+            </div>
+        </div>
+
+        <iframe id="taskFrame" frameborder="0"></iframe>
+        <iframe id="solutionFrame" style="display: none;" frameborder="0"></iframe>
+    </div>
+
+    <script>
+        // Получаем параметры из URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const taskPath = urlParams.get('task');
+        
+        // Функция для загрузки метаданных задания
+        async function loadTaskMetadata() {
+            try {
+                const response = await fetch(`/tasks/${taskPath}`);
+                const content = await response.text();
+                
+                // Извлекаем название и описание задания
+                const titleMatch = content.match(/\/\*\s*Задание:\s*([^*]*?)\s*\*\//) || 
+                                 content.match(/<!--\s*Задание:\s*([^-]*?)\s*-->/) ||
+                                 [null, taskPath];
+                const descMatch = content.match(/\/\*\s*Описание:\s*([^*]*?)\s*\*\//) || 
+                                content.match(/<!--\s*Описание:\s*([^-]*?)\s*-->/) ||
+                                [null, ''];
+                
+                document.getElementById('taskTitle').textContent = titleMatch[1].trim();
+                document.getElementById('taskDescription').textContent = descMatch[1].trim();
+            } catch (error) {
+                console.error('Ошибка загрузки метаданных:', error);
+            }
+        }
+
+        // Функция для показа задания
+        window.showTask = function() {
+            document.getElementById('taskFrame').style.display = 'block';
+            document.getElementById('solutionFrame').style.display = 'none';
+            document.getElementById('showTaskBtn').classList.add('active');
+            document.getElementById('showTaskBtn').classList.remove('secondary');
+            document.getElementById('showSolutionBtn').classList.remove('active');
+            document.getElementById('showSolutionBtn').classList.add('secondary');
+        }
+
+        // Функция для показа решения
+        window.showSolution = function() {
+            document.getElementById('taskFrame').style.display = 'none';
+            document.getElementById('solutionFrame').style.display = 'block';
+            document.getElementById('showSolutionBtn').classList.add('active');
+            document.getElementById('showSolutionBtn').classList.remove('secondary');
+            document.getElementById('showTaskBtn').classList.remove('active');
+            document.getElementById('showTaskBtn').classList.add('secondary');
+
+            // Загружаем решение при первом показе
+            const solutionFrame = document.getElementById('solutionFrame');
+            if (!solutionFrame.src) {
+                solutionFrame.src = `/solution?task=${taskPath}`;
+            }
+        }
+
+        // Инициализация
+        async function init() {
+            await loadTaskMetadata();
+            document.getElementById('taskFrame').src = `/task?task=${taskPath}`;
+        }
+
+        // Запускаем инициализацию
+        init();
+
+        // WebSocket для hot reload
+        try {
+            const ws = new WebSocket('ws://localhost:3000');
+            
+            ws.onmessage = function(event) {
+                if (event.data === 'reload') {
+                    // Перезагружаем фреймы
+                    document.getElementById('taskFrame').src = document.getElementById('taskFrame').src;
+                    const solutionFrame = document.getElementById('solutionFrame');
+                    if (solutionFrame.style.display !== 'none') {
+                        solutionFrame.src = solutionFrame.src;
+                    }
+                }
+            };
+
+            ws.onerror = function() {
+                console.log('WebSocket connection failed - hot reload disabled');
+            };
+        } catch (e) {
+            console.log('WebSocket not available - hot reload disabled');
+        }
+    </script>
+</body>
+</html> 

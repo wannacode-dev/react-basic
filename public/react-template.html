@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>React Задание</title>
+
+    <!-- React dependencies -->
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+    <!-- Hot reload -->
+    <script>
+        const ws = new WebSocket('ws://' + window.location.host);
+        ws.onmessage = function(event) {
+            if (event.data === 'reload') window.location.reload();
+        };
+    </script>
+
+    <!-- Task styles -->
+    TASK_STYLES_PLACEHOLDER
+</head>
+<body>
+    <div id="root"></div>
+
+    <!-- Task script -->
+    <script type="text/babel">
+        TASK_SCRIPT_PLACEHOLDER
+    </script>
+</body>
+</html> 
