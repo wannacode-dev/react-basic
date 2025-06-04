@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const WebSocket = require('ws');
 const chokidar = require('chokidar');
+const { chapterTranslations } = require('./public/translations');
 
 const app = express();
 const port = 3000;
@@ -92,7 +93,8 @@ app.get('/api/tasks', (req, res) => {
         allTasks.forEach(task => {
             if (!chapters[task.chapter]) {
                 chapters[task.chapter] = {
-                    chapter: task.chapter,
+                    chapter: chapterTranslations[task.chapter] || task.chapter,
+                    originalChapter: task.chapter,
                     tasks: []
                 };
             }
@@ -103,9 +105,9 @@ app.get('/api/tasks', (req, res) => {
             });
         });
 
-        // Преобразуем объект в массив и сортируем темы
+        // Преобразуем объект в массив и сортируем темы по оригинальным названиям
         const result = Object.values(chapters)
-            .sort((a, b) => a.chapter.localeCompare(b.chapter));
+            .sort((a, b) => a.originalChapter.localeCompare(b.originalChapter));
 
         console.log(`Найдено тем: ${result.length}`);
         res.json(result);
