@@ -45,17 +45,18 @@ function scanDirectory(dir) {
                     const pathParts = relativePath.split(path.sep);
                     const chapter = pathParts[0];
                     
-                    // Извлекаем название и описание задания
-                    const nameMatch = content.match(/\/\*\s*Задание:\s*([^*]*?)\s*\*\//) || 
-                                    content.match(/<!--\s*Задание:\s*([^-]*?)\s*-->/) ||
-                                    [null, item];
-                    const descMatch = content.match(/\/\*\s*Описание:\s*([^*]*?)\s*\*\//) || 
-                                    content.match(/<!--\s*Описание:\s*([^-]*?)\s*-->/) ||
+                    // Извлекаем название задания (первая строка после "Задание:")
+                    const nameMatch = content.match(/Задание:\s*([^\n]*)/);
+                    const name = nameMatch ? nameMatch[1].trim() : item;
+
+                    // Извлекаем полное описание задания
+                    const descMatch = content.match(/\/\*\s*Задание:[\s\S]*?\*\//) || 
+                                    content.match(/<!--\s*Задание:[\s\S]*?-->/) ||
                                     [null, ''];
 
                     tasks.push({
-                        name: nameMatch[1].trim(),
-                        description: descMatch[1].trim(),
+                        name: name,
+                        description: descMatch[0] || '',
                         file: relativePath,
                         chapter: chapter
                     });
@@ -131,17 +132,73 @@ app.get('/task', (req, res) => {
 
         const content = fs.readFileSync(filePath, 'utf-8');
 
-        // Определяем, является ли это React-заданием
+        // Определяем тип файла
+        const isJsFile = taskPath.endsWith('.js');
         const isReactTask = content.includes('React.') || content.includes('ReactDOM.') || content.includes('JSX');
 
-        if (isReactTask) {
-            // Извлекаем стили и скрипт из файла задания
+        if (isJsFile) {
+            // Для JS файлов создаем HTML обертку
+            let modifiedTemplate = reactTemplate;
+            
+            // Извлекаем комментарии с описанием задания
+            const taskMatch = content.match(/\/\*\s*(Задание:[\s\S]*?)\*\//);
+            const taskDescription = taskMatch ? taskMatch[1].split('\n')[0].replace('Задание:', '').trim() : '';
+            
+            // Создаем стили для отображения кода
+            const styles = `
+                <style>
+                    .task-description {
+                        background: hsl(var(--secondary));
+                        padding: 20px;
+                        border-radius: var(--radius);
+                        margin-bottom: 20px;
+                        font-size: 1.5em;
+                        font-weight: bold;
+                    }
+                    .container {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        min-height: 100vh;
+                        padding: 20px;
+                    }
+                    .title {
+                        color: red;
+                    }
+                    .text {
+                        color: blue;
+                    }
+                </style>
+            `;
+
+            // Создаем скрипт с кодом задания
+            const script = `
+                // Отображаем описание задания
+                const description = document.createElement('div');
+                description.className = 'task-description';
+                description.textContent = ${JSON.stringify(taskDescription)};
+                document.body.insertBefore(description, document.getElementById('root'));
+
+                ${content}
+
+                // Рендерим React элементы
+                ReactDOM.render(elements, document.getElementById('root'));
+            `;
+
+            modifiedTemplate = modifiedTemplate
+                .replace('TASK_STYLES_PLACEHOLDER', styles)
+                .replace('TASK_SCRIPT_PLACEHOLDER', script);
+
+            res.setHeader('Content-Type', 'text/html');
+            res.send(modifiedTemplate);
+        } else if (isReactTask) {
+            // Для HTML файлов с React
             const styleMatch = content.match(/<style>([\s\S]*?)<\/style>/);
             const scriptMatch = content.match(/<script[\s\S]*?>([\s\S]*?)<\/script>/);
 
             let modifiedTemplate = reactTemplate;
 
-            // Заменяем плейсхолдеры в шаблоне
             if (styleMatch) {
                 modifiedTemplate = modifiedTemplate.replace('TASK_STYLES_PLACEHOLDER', `<style>${styleMatch[1]}</style>`);
             } else {
@@ -155,7 +212,7 @@ app.get('/task', (req, res) => {
             res.setHeader('Content-Type', 'text/html');
             res.send(modifiedTemplate);
         } else {
-            // Для не-React заданий отправляем файл как есть
+            // Для остальных файлов отправляем как есть
             res.setHeader('Content-Type', 'text/html');
             res.sendFile(filePath);
         }

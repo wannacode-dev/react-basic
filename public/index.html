@@ -4,7 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>React Задания - Интерактивное обучение</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        :root {
+            --background: 222.2 84% 4.9%;
+            --foreground: 210 40% 98%;
+            --card: 222.2 84% 4.9%;
+            --card-foreground: 210 40% 98%;
+            --primary: 217.2 91.2% 59.8%;
+            --primary-foreground: 222.2 47.4% 11.2%;
+            --secondary: 217.2 32.6% 17.5%;
+            --secondary-foreground: 210 40% 98%;
+            --accent: 217.2 32.6% 17.5%;
+            --accent-foreground: 210 40% 98%;
+            --destructive: 0 62.8% 30.6%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 217.2 32.6% 17.5%;
+            --input: 217.2 32.6% 17.5%;
+            --ring: 224.3 76.3% 48%;
+            --radius: 0.75rem;
+            --quasar-blue: #0ea5e9;
+            --quasar-purple: #a855f7;
+            --quasar-glow: rgba(56, 189, 248, 0.35);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,58 +36,52 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: hsl(var(--background));
+            color: hsl(var(--foreground));
             min-height: 100vh;
             padding: 20px;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 800px;
             margin: 0 auto;
         }
 
         .header {
             text-align: center;
             margin-bottom: 50px;
-            color: white;
+            animation: float 3s ease-in-out infinite;
         }
 
         .header h1 {
             font-size: 3em;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            background: linear-gradient(135deg, var(--quasar-blue), var(--quasar-purple));
+            -webkit-background-clip: text;
+            color: transparent;
         }
 
         .header p {
             font-size: 1.2em;
             opacity: 0.9;
-        }
-
-        .tasks-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 30px;
+            color: hsl(var(--foreground));
         }
 
         .chapter-card {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .chapter-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            background: hsl(var(--card));
+            border-radius: var(--radius);
+            padding: 20px;
+            border: 1px solid hsl(var(--border));
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
         }
 
         .chapter-title {
             font-size: 1.5em;
-            color: #333;
-            margin-bottom: 20px;
+            color: hsl(var(--foreground));
+            margin-bottom: 15px;
             padding-bottom: 10px;
-            border-bottom: 3px solid #e0e0e0;
+            border-bottom: 1px solid hsl(var(--border));
         }
 
         .task-list {
@@ -72,83 +89,68 @@
         }
 
         .task-item {
-            margin-bottom: 15px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border-left: 4px solid #2196F3;
-            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid hsl(var(--border));
+            gap: 10px;
         }
 
-        .task-item:hover {
-            background: #e3f2fd;
-            transform: translateX(5px);
+        .task-item:last-child {
+            border-bottom: none;
         }
 
         .task-name {
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 8px;
-        }
-
-        .task-description {
-            color: #666;
-            font-size: 0.9em;
-            margin-bottom: 12px;
-            line-height: 1.4;
+            font-weight: 500;
+            color: hsl(var(--foreground));
+            flex: 1;
         }
 
         .task-button {
-            display: inline-block;
-            padding: 8px 16px;
-            background: #2196F3;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: linear-gradient(135deg, var(--quasar-blue), var(--quasar-purple));
             color: white;
             text-decoration: none;
-            border-radius: 20px;
+            border-radius: 6px;
             font-size: 0.9em;
-            font-weight: 500;
-            transition: background-color 0.3s ease;
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
         }
 
         .task-button:hover {
-            background: #1976D2;
-        }
-
-        .loading {
-            text-align: center;
-            color: white;
-            font-size: 1.2em;
-            margin-top: 50px;
-        }
-
-        .error {
-            background: #ffebee;
-            color: #c62828;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-            border-left: 4px solid #f44336;
+            opacity: 0.9;
         }
 
         .stats {
             text-align: center;
-            color: white;
+            color: hsl(var(--foreground));
             margin-bottom: 30px;
             font-size: 1.1em;
+            padding: 10px;
         }
 
         @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
             .header h1 {
                 font-size: 2em;
             }
             
-            .tasks-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
+            .task-item {
+                flex-direction: column;
+                align-items: stretch;
             }
             
-            .chapter-card {
-                padding: 20px;
+            .task-button {
+                width: 100%;
+                justify-content: center;
             }
         }
     </style>
@@ -161,7 +163,9 @@
         </div>
 
         <div id="stats" class="stats"></div>
-        <div id="content" class="loading">Загружаем список заданий...</div>
+        <div id="content" class="loading">
+            <i class="fas fa-spinner fa-spin"></i> Загружаем список заданий...
+        </div>
     </div>
 
     <script>
@@ -173,20 +177,19 @@
                 if (tasks.length === 0) {
                     document.getElementById('content').innerHTML = `
                         <div class="error">
-                            <h3>Задания не найдены</h3>
+                            <h3><i class="fas fa-exclamation-triangle"></i> Задания не найдены</h3>
                             <p>Убедитесь, что в папке src есть файлы с расширением .problem.js</p>
                         </div>
                     `;
                     return;
                 }
 
-                // Подсчет общего количества заданий
                 const totalTasks = tasks.reduce((sum, chapter) => sum + chapter.tasks.length, 0);
                 document.getElementById('stats').innerHTML = `
-                    📊 Всего глав: ${tasks.length} | Всего заданий: ${totalTasks}
+                    <i class="fas fa-book-open"></i> Всего глав: ${tasks.length} 
+                    <i class="fas fa-tasks"></i> Всего заданий: ${totalTasks}
                 `;
 
-                // Генерация HTML для заданий
                 const tasksHtml = tasks.map(chapter => `
                     <div class="chapter-card">
                         <h2 class="chapter-title">${chapter.chapter}</h2>
@@ -194,11 +197,11 @@
                             ${chapter.tasks.map(task => `
                                 <li class="task-item">
                                     <div class="task-name">${task.name}</div>
-                                    <div class="task-description">${task.description}</div>
                                     <a href="/task?task=${encodeURIComponent(task.file)}" 
                                        class="task-button" 
                                        target="_blank">
-                                        🚀 Открыть задание
+                                        <i class="fas fa-rocket"></i>
+                                        <span>Открыть</span>
                                     </a>
                                 </li>
                             `).join('')}
@@ -216,7 +219,7 @@
                 console.error('Ошибка загрузки заданий:', error);
                 document.getElementById('content').innerHTML = `
                     <div class="error">
-                        <h3>Ошибка загрузки</h3>
+                        <h3><i class="fas fa-exclamation-circle"></i> Ошибка загрузки</h3>
                         <p>Не удалось загрузить список заданий: ${error.message}</p>
                         <p>Убедитесь, что сервер запущен (npm start)</p>
                     </div>
@@ -224,21 +227,14 @@
             }
         }
 
-        // Загружаем задания при загрузке страницы
         loadTasks();
 
-        // Автоматическое обновление списка при изменении файлов
         try {
-            const ws = new WebSocket('ws://localhost:3000');
-            
+            const ws = new WebSocket('ws://' + window.location.host);
             ws.onmessage = function(event) {
                 if (event.data === 'reload') {
                     loadTasks();
                 }
-            };
-
-            ws.onerror = function() {
-                console.log('WebSocket connection failed - hot reload disabled');
             };
         } catch (e) {
             console.log('WebSocket not available - hot reload disabled');
