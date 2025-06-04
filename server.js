@@ -149,14 +149,6 @@ app.get('/task', (req, res) => {
             // Создаем стили для отображения кода
             const styles = `
                 <style>
-                    .task-description {
-                        background: hsl(var(--secondary));
-                        padding: 20px;
-                        border-radius: var(--radius);
-                        margin-bottom: 20px;
-                        font-size: 1.5em;
-                        font-weight: bold;
-                    }
                     .container {
                         display: flex;
                         flex-direction: column;
@@ -176,12 +168,7 @@ app.get('/task', (req, res) => {
 
             // Создаем скрипт с кодом задания
             const script = `
-                // Отображаем описание задания
-                const description = document.createElement('div');
-                description.className = 'task-description';
-                description.textContent = ${JSON.stringify(taskDescription)};
-                document.body.insertBefore(description, document.getElementById('root'));
-
+                // Код задания
                 ${content}
 
                 // Рендерим React элементы

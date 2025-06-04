@@ -20,12 +20,6 @@
             margin-bottom: 10px;
         }
 
-        .task-description {
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-
         .button-group {
             display: flex;
             gap: 10px;
@@ -88,7 +82,6 @@
         
         <div class="task-header">
             <h1 class="task-title" id="taskTitle">Загрузка задания...</h1>
-            <div class="task-description" id="taskDescription"></div>
             
             <div class="button-group">
                 <button class="button active" id="showTaskBtn" onclick="showTask()">
@@ -116,13 +109,8 @@
                 const content = await response.text();
                 
                 // Извлекаем название и описание задания
-                const titleMatch = content.match(/\/\*\s*Задание:\s*([^*]*?)\s*\*\//) || 
-                                 content.match(/<!--\s*Задание:\s*([^-]*?)\s*-->/) ||
-                                 [null, taskPath];
-                const descMatch = content.match(/\/\*\s*Описание:\s*([^*]*?)\s*\*\//) || 
-                                content.match(/<!--\s*Описание:\s*([^-]*?)\s*-->/) ||
-                                [null, ''];
-                
+                const titleMatch = content.match(/\/\*\s*Задание:\s*([^*]*?)\s*\*\//) || content.match(/<!--\s*Задание:\s*([^-]*?)\s*-->/) || [null, taskPath];
+                const descMatch = content.match(/\/\*\s*Описание:\s*([^*]*?)\s*\*\//) || content.match(/<!--\s*Описание:\s*([^-]*?)\s*-->/) || [null, ''];
                 document.getElementById('taskTitle').textContent = titleMatch[1].trim();
                 document.getElementById('taskDescription').textContent = descMatch[1].trim();
             } catch (error) {
