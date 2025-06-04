@@ -135,76 +135,48 @@ app.get('/task', (req, res) => {
         const content = fs.readFileSync(filePath, 'utf-8');
 
         // Определяем тип файла
-        const isJsFile = taskPath.endsWith('.js');
         const isReactTask = content.includes('React.') || content.includes('ReactDOM.') || content.includes('JSX');
+        
+        // Выбираем подходящий шаблон
+        let template = isReactTask ? reactTemplate : taskTemplate;
+        
+        // Извлекаем стили если они есть
+        const styleMatch = content.match(/<style>([\s\S]*?)<\/style>/);
+        const styles = styleMatch ? styleMatch[1] : '';
 
-        if (isJsFile) {
-            // Для JS файлов создаем HTML обертку
-            let modifiedTemplate = reactTemplate;
-            
-            // Извлекаем комментарии с описанием задания
-            const taskMatch = content.match(/\/\*\s*(Задание:[\s\S]*?)\*\//);
-            const taskDescription = taskMatch ? taskMatch[1].split('\n')[0].replace('Задание:', '').trim() : '';
-            
-            // Создаем стили для отображения кода
-            const styles = `
-                <style>
-                    .container {
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                        justify-content: center;
-                        min-height: 100vh;
-                        padding: 20px;
-                    }
-                    .title {
-                        color: red;
-                    }
-                    .text {
-                        color: blue;
-                    }
-                </style>
-            `;
+        // Извлекаем скрипт
+        const scriptMatch = content.match(/<script[\s\S]*?>([\s\S]*?)<\/script>/);
+        const script = scriptMatch ? scriptMatch[1] : content;
 
-            // Создаем скрипт с кодом задания
-            const script = `
-                // Код задания
-                ${content}
+        // Создаем HTML с информацией о файле
+        const fileInfo = `
+            <div class="current-file" style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                background: #f5f5f5;
+                padding: 8px 16px;
+                font-family: monospace;
+                font-size: 14px;
+                color: #666;
+                border-bottom: 1px solid #ddd;
+                z-index: 1000;
+            ">
+                Файл: ${taskPath}
+            </div>
+            <div id="root" style="margin-top: 40px;"></div>
+        `;
 
-                // Рендерим React элементы
-                ReactDOM.render(elements, document.getElementById('root'));
-            `;
+        // Заменяем плейсхолдеры в шаблоне
+        let result = template
+            .replace('<div id="root"></div>', fileInfo)
+            .replace('TASK_STYLES_PLACEHOLDER', `<style>${styles}</style>`)
+            .replace('TASK_SCRIPT_PLACEHOLDER', script)
+            .replace('TASK_CODE_PLACEHOLDER', script);
 
-            modifiedTemplate = modifiedTemplate
-                .replace('TASK_STYLES_PLACEHOLDER', styles)
-                .replace('TASK_SCRIPT_PLACEHOLDER', script);
-
-            res.setHeader('Content-Type', 'text/html');
-            res.send(modifiedTemplate);
-        } else if (isReactTask) {
-            // Для HTML файлов с React
-            const styleMatch = content.match(/<style>([\s\S]*?)<\/style>/);
-            const scriptMatch = content.match(/<script[\s\S]*?>([\s\S]*?)<\/script>/);
-
-            let modifiedTemplate = reactTemplate;
-
-            if (styleMatch) {
-                modifiedTemplate = modifiedTemplate.replace('TASK_STYLES_PLACEHOLDER', `<style>${styleMatch[1]}</style>`);
-            } else {
-                modifiedTemplate = modifiedTemplate.replace('TASK_STYLES_PLACEHOLDER', '');
-            }
-
-            if (scriptMatch) {
-                modifiedTemplate = modifiedTemplate.replace('TASK_SCRIPT_PLACEHOLDER', scriptMatch[1]);
-            }
-
-            res.setHeader('Content-Type', 'text/html');
-            res.send(modifiedTemplate);
-        } else {
-            // Для остальных файлов отправляем как есть
-            res.setHeader('Content-Type', 'text/html');
-            res.sendFile(filePath);
-        }
+        res.setHeader('Content-Type', 'text/html');
+        res.send(result);
     } catch (error) {
         console.error('Ошибка загрузки задания:', error);
         res.status(500).send('Ошибка при загрузке задания');
@@ -242,12 +214,13 @@ const server = app.listen(port, () => {
 
 // WebSocket сервер для hot reload
 const wss = new WebSocket.Server({ server });
-const watcher = chokidar.watch('src/**/*', {
+const watcher = chokidar.watch(['src/**/*', 'public/**/*'], {
     ignored: /(^|[\/\\])\../,
     persistent: true
 });
 
-watcher.on('change', () => {
+watcher.on('change', (path) => {
+    console.log('File changed:', path);
     wss.clients.forEach(client => {
         if (client.readyState === WebSocket.OPEN) {
             client.send('reload');

@@ -126,6 +126,42 @@
             opacity: 0.9;
         }
 
+        .task-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: hsl(var(--card));
+            padding: 10px 20px;
+            border-bottom: 1px solid hsl(var(--border));
+            z-index: 1000;
+            display: none;
+        }
+
+        .task-header .file-path {
+            font-family: monospace;
+            color: var(--quasar-blue);
+            font-size: 14px;
+        }
+
+        .task-header .chapter-name {
+            color: var(--quasar-purple);
+            font-size: 14px;
+            margin-right: 15px;
+        }
+
+        body.is-task {
+            padding-top: 50px;
+        }
+
+        body.is-task .task-header {
+            display: block;
+        }
+
+        body.is-task .container {
+            display: none;
+        }
+
         .stats {
             text-align: center;
             color: hsl(var(--foreground));
@@ -156,6 +192,11 @@
     </style>
 </head>
 <body>
+    <div class="task-header">
+        <span class="chapter-name" id="chapterName"></span>
+        <span class="file-path" id="filePath"></span>
+    </div>
+
     <div class="container">
         <div class="header">
             <h1>📚 React Задания</h1>
@@ -169,6 +210,24 @@
     </div>
 
     <script>
+        // Проверяем, находимся ли мы на странице задания
+        const urlParams = new URLSearchParams(window.location.search);
+        const taskPath = urlParams.get('task');
+        
+        if (taskPath) {
+            // Если это страница задания, показываем заголовок с файлом
+            document.body.classList.add('is-task');
+            const decodedPath = decodeURIComponent(taskPath);
+            const pathParts = decodedPath.split('/');
+            
+            // Получаем имя темы (первая часть пути)
+            const chapterName = pathParts[0];
+            document.getElementById('chapterName').textContent = chapterName;
+            
+            // Показываем полный путь к файлу
+            document.getElementById('filePath').textContent = decodedPath;
+        }
+
         async function loadTasks() {
             try {
                 const response = await fetch('/api/tasks');
@@ -197,12 +256,21 @@
                             ${chapter.tasks.map(task => `
                                 <li class="task-item">
                                     <div class="task-name">${task.name}</div>
-                                    <a href="/task?task=${encodeURIComponent(task.file)}" 
-                                       class="task-button" 
-                                       target="_blank">
-                                        <i class="fas fa-rocket"></i>
-                                        <span>Открыть</span>
-                                    </a>
+                                    <div style="display: flex; gap: 10px;">
+                                        <a href="/task?task=${encodeURIComponent(task.file)}" 
+                                           class="task-button" 
+                                           target="_blank">
+                                            <i class="fas fa-rocket"></i>
+                                            <span>Открыть</span>
+                                        </a>
+                                        <a href="/task?task=${encodeURIComponent(task.file.replace('.problem.', '.solution.'))}" 
+                                           class="task-button" 
+                                           style="background: linear-gradient(135deg, #10b981, #059669);"
+                                           target="_blank">
+                                            <i class="fas fa-lightbulb"></i>
+                                            <span>Решение</span>
+                                        </a>
+                                    </div>
                                 </li>
                             `).join('')}
                         </ul>
