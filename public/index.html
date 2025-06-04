@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React Задания - Интерактивное обучение</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --background: 222.2 84% 4.9%;
+            --foreground: 210 40% 98%;
+            --card: 222.2 84% 4.9%;
+            --card-foreground: 210 40% 98%;
+            --primary: 217.2 91.2% 59.8%;
+            --primary-foreground: 222.2 47.4% 11.2%;
+            --secondary: 217.2 32.6% 17.5%;
+            --secondary-foreground: 210 40% 98%;
+            --accent: 217.2 32.6% 17.5%;
+            --accent-foreground: 210 40% 98%;
+            --destructive: 0 62.8% 30.6%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 217.2 32.6% 17.5%;
+            --input: 217.2 32.6% 17.5%;
+            --ring: 224.3 76.3% 48%;
+            --radius: 0.75rem;
+            --quasar-blue: #0ea5e9;
+            --quasar-purple: #a855f7;
+            --quasar-glow: rgba(56, 189, 248, 0.35);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: hsl(var(--background));
+            color: hsl(var(--foreground));
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--quasar-blue), var(--quasar-purple));
+            -webkit-background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            color: hsl(var(--foreground));
+        }
+
+        .chapter-card {
+            background: hsl(var(--card));
+            border-radius: var(--radius);
+            padding: 20px;
+            border: 1px solid hsl(var(--border));
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .chapter-title {
+            font-size: 1.5em;
+            color: hsl(var(--foreground));
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid hsl(var(--border));
+        }
+
+        .task-list {
+            list-style: none;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid hsl(var(--border));
+            gap: 10px;
+        }
+
+        .task-item:last-child {
+            border-bottom: none;
+        }
+
+        .task-name {
+            font-weight: 500;
+            color: hsl(var(--foreground));
+            flex: 1;
+        }
+
+        .task-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: linear-gradient(135deg, var(--quasar-blue), var(--quasar-purple));
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.9em;
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .task-button:hover {
+            opacity: 0.9;
+        }
+
+        .task-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: hsl(var(--card));
+            padding: 10px 20px;
+            border-bottom: 1px solid hsl(var(--border));
+            z-index: 1000;
+            display: none;
+        }
+
+        .task-header .file-path {
+            font-family: monospace;
+            color: var(--quasar-blue);
+            font-size: 14px;
+        }
+
+        .task-header .chapter-name {
+            color: var(--quasar-purple);
+            font-size: 14px;
+            margin-right: 15px;
+        }
+
+        body.is-task {
+            padding-top: 50px;
+        }
+
+        body.is-task .task-header {
+            display: block;
+        }
+
+        body.is-task .container {
+            display: none;
+        }
+
+        .stats {
+            text-align: center;
+            color: hsl(var(--foreground));
+            margin-bottom: 30px;
+            font-size: 1.1em;
+            padding: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .task-item {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .task-button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="task-header">
+        <span class="chapter-name" id="chapterName"></span>
+        <span class="file-path" id="filePath"></span>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>📚 React для начинающих</h1>
+            <p>Интерактивное обучение React</p>
+        </div>
+
+        <div id="stats" class="stats"></div>
+        <div id="content" class="loading">
+            <i class="fas fa-spinner fa-spin"></i> Загружаем список заданий...
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const taskPath = urlParams.get('task');
+        
+        if (taskPath) {
+            // Если это страница задания, показываем заголовок с файлом
+            document.body.classList.add('is-task');
+            const decodedPath = decodeURIComponent(taskPath);
+            const pathParts = decodedPath.split('/');
+            
+            // Получаем имя темы (первая часть пути)
+            const chapterName = pathParts[0];
+            document.getElementById('chapterName').textContent = chapterName;
+            
+            // Показываем полный путь к файлу
+            document.getElementById('filePath').textContent = decodedPath;
+        }
+
+        async function loadTasks() {
+            try {
+                const response = await fetch('/api/tasks');
+                const tasks = await response.json();
+                
+                if (tasks.length === 0) {
+                    document.getElementById('content').innerHTML = `
+                        <div class="error">
+                            <h3><i class="fas fa-exclamation-triangle"></i> Задания не найдены</h3>
+                            <p>Убедитесь, что в папке src есть файлы с расширением .problem.js</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const totalTasks = tasks.reduce((sum, chapter) => sum + chapter.tasks.length, 0);
+                document.getElementById('stats').innerHTML = `
+                    <i class="fas fa-book-open"></i> Всего глав: ${tasks.length} 
+                    <i class="fas fa-tasks"></i> Всего заданий: ${totalTasks}
+                `;
+
+                const tasksHtml = tasks.map(chapter => `
+                    <div class="chapter-card">
+                        <h2 class="chapter-title">${chapter.chapter}</h2>
+                        <ul class="task-list">
+                            ${chapter.tasks.map(task => `
+                                <li class="task-item">
+                                    <div class="task-name">${task.name}</div>
+                                    <div style="display: flex; gap: 10px;">
+                                        <a href="/task?task=${encodeURIComponent(task.file)}" 
+                                           class="task-button" 
+                                           target="_blank">
+                                            <i class="fas fa-rocket"></i>
+                                            <span>Открыть</span>
+                                        </a>
+                                        <a href="/task?task=${encodeURIComponent(task.file.replace('.problem.', '.solution.'))}" 
+                                           class="task-button" 
+                                           style="background: linear-gradient(135deg, #10b981, #059669);"
+                                           target="_blank">
+                                            <i class="fas fa-lightbulb"></i>
+                                            <span>Решение</span>
+                                        </a>
+                                    </div>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                `).join('');
+
+                document.getElementById('content').innerHTML = `
+                    <div class="tasks-grid">
+                        ${tasksHtml}
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error('Ошибка загрузки заданий:', error);
+                document.getElementById('content').innerHTML = `
+                    <div class="error">
+                        <h3><i class="fas fa-exclamation-circle"></i> Ошибка загрузки</h3>
+                        <p>Не удалось загрузить список заданий: ${error.message}</p>
+                        <p>Убедитесь, что сервер запущен (npm start)</p>
+                    </div>
+                `;
+            }
+        }
+
+        loadTasks();
+
+        try {
+            const ws = new WebSocket('ws://' + window.location.host);
+            ws.onmessage = function(event) {
+                if (event.data === 'reload') {
+                    loadTasks();
+                }
+            };
+        } catch (e) {
+            console.log('WebSocket not available - hot reload disabled');
+        }
+    </script>
+</body>
+</html> 

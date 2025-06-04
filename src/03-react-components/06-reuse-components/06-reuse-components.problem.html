@@ -1,10 +1,11 @@
+<!--
+    Задание: Переиспользование компонентов
+-->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>React элементы</title>
-
-    <script src="../../../public/react.js"></script>
+    <title>Переиспользование компонентов</title>
 
     <style>
         .container {
@@ -28,7 +29,7 @@
 <body>
     <div id="root"></div>
 
-    <script type="text/babel">
+    <script>
         /*
             Нужно переиспользовать компоненты <H1> и <P> в компоненте <Container>.
 
@@ -79,9 +80,7 @@
             <P text={pText} />
         </Container>;
 
-        const root = document.getElementById('root');
-
-        ReactDOM.render(elements, root);
+        ReactDOM.render(elements, document.getElementById('root'));
     </script>
 </body>
 </html>

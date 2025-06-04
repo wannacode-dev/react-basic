@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>React Задание</title>
+
+    <!-- React dependencies -->
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+    <!-- Hot reload -->
+    <script>
+        const ws = new WebSocket('ws://' + window.location.host);
+        ws.onmessage = function(event) {
+            if (event.data === 'reload') window.location.reload();
+        };
+    </script>
+
+    <style>
+        .current-file {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #f5f5f5;
+            padding: 8px 16px;
+            font-family: monospace;
+            font-size: 14px;
+            color: #666;
+            border-bottom: 1px solid #ddd;
+            z-index: 1000;
+        }
+    </style>
+
+    <!-- Task styles -->
+    TASK_STYLES_PLACEHOLDER
+</head>
+<body>
+    <div class="current-file" id="currentFile"></div>
+    <div id="root" style="margin-top: 40px;"></div>
+
+    <script>
+        // Отображаем текущий файл
+        const urlParams = new URLSearchParams(window.location.search);
+        const taskPath = urlParams.get('task');
+        if (taskPath) {
+            const decodedPath = decodeURIComponent(taskPath).replace(/\\/g, '/');
+            document.getElementById('currentFile').textContent = 'Файл: ' + decodedPath;
+        }
+    </script>
+
+    <!-- Task script -->
+    <script type="text/babel">
+        TASK_SCRIPT_PLACEHOLDER
+    </script>
+</body>
+</html> 
