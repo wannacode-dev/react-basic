@@ -1,7 +1,3 @@
-/*
-    Задание: Использование хука- useState
-*/
-
 const { useState } = React;
 
 function App() {

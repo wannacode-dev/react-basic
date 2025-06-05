@@ -1,7 +1,3 @@
-/*
-    Задание: Использование хука- useState (часть 3) (решение)
-*/
-
 const { useState } = React;
 
 function Counter() {
