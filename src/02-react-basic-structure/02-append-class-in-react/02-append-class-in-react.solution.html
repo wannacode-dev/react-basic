@@ -18,9 +18,9 @@
     <script>
         const h1 = React.createElement('h1', { className: 'title' }, 'Привет из React!');
 
-        const root = document.getElementById('root');
+        const root = ReactDOM.createRoot(document.getElementById('root'));
 
-        ReactDOM.render(h1, root);
+        root.render(h1);
     </script>
 </body>
 </html>

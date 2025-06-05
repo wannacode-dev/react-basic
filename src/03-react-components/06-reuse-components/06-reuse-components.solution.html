@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <title>React элементы</title>
 
-     
-
     <style>
         .container {
             display: flex;
@@ -61,9 +59,9 @@
             <P text={mySecondComponentText} />
         </Container>;
 
-        const root = document.getElementById('root');
+        const root = ReactDOM.createRoot(document.getElementById('root'));
 
-        ReactDOM.render(elements, root);
+        root.render(elements);
     </script>
 </body>
 </html>

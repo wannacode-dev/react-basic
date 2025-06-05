@@ -54,9 +54,9 @@
 
         const elements = container(children);
 
-        const root = document.getElementById('root');
+        const root = ReactDOM.createRoot(document.getElementById('root'));
 
-        ReactDOM.render(elements, root);
+        root.render(elements);
     </script>
 </body>
 </html>
