@@ -33,9 +33,9 @@
         // Это больше не нужно, т.к. мы используем React.createElement
         h1.textContent = 'Привет из JS!';
 
-        const root = document.getElementById('root');
+        const root = ReactDOM.createRoot(document.getElementById('root'));
 
-        root.appendChild(h1);
+        root.render(h1);
     </script>
 </body>
 </html>

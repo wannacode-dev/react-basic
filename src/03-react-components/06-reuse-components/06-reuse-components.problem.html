@@ -80,7 +80,9 @@
             <P text={pText} />
         </Container>;
 
-        ReactDOM.render(elements, document.getElementById('root'));
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+
+        root.render(elements);
     </script>
 </body>
 </html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>React фрагменты</title>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const app = (
+            <>
+                <h1>Привет из React компонента!</h1>
+                <p>Это текст из компонента P</p>
+            </>
+        );
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+
+        root.render(app);
+    </script>
+</body>
+</html>

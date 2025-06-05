@@ -49,9 +49,9 @@
 
         const elements = container(h1Element, pElement);
 
-        const root = document.getElementById('root');
+        const root = ReactDOM.createRoot(document.getElementById('root'));
 
-        ReactDOM.render(elements, root);
+        root.render(elements);
     </script>
 </body>
 </html>

@@ -51,9 +51,9 @@
             <p className="text">{pText}</p>
         </div>
 
-        const root = document.getElementById('root');
+        const root = ReactDOM.createRoot(document.getElementById('root'));
 
-        ReactDOM.render(container, root);
+        root.render(container);
     </script>
 </body>
 </html>
