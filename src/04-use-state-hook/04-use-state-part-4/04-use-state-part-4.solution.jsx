@@ -1,16 +1,8 @@
-/*
-    Задание: Использование хука- useState (часть 4)
-*/
-
 const { useState } = React;
 
-// Передавайте начальное значение счетчика через пропсы
 function Counter({ initialCount }) {
     const [count, setCount] = useState(initialCount);
     const [isDisabled, setIsDisabled] = useState(false);
-    // Добавьте кнопку которая будет блокировать кнопку увеличить
-    // Добавьте кнопку которая будет разблокировать кнопку увеличить
-    // Добавьте кнопку которая будет сбрасывать счетчик и разблокировать кнопку увеличить
 
     return <div>
         <h1>Счетчик: {count}</h1>
